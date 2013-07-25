@@ -6,7 +6,7 @@ Fakehttp is trying to accomplish the same goal as the Ruby fakeweb library, but 
 
 ![architecture.png](http://cl.ly/image/1n0n3y283z0a/Screen%20Shot%202013-07-24%20at%2010.02.57%20PM.png)
 
-Essentially your tests just need to send requests to the fakehttp server, which allows you to control exactly what responses it returns.
+Essentially your tests just need to send requests to the fakehttp server, and it will return the response(s) which you've previously instructed it to return.
 
 # fakehttp vs goamz.testutil
 

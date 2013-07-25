@@ -1,6 +1,6 @@
 # fakehttp
 
-Fake in-process webserver that returns whatever responses you tell it to return.  Useful for unit testing code which depends on an external webserver (eg, the facebook api).
+Fake in-process webserver for unit testing code which depends on an external webserver.
 
 Fakehttp is trying to accomplish the same goal as the Ruby fakeweb library, but at the network layer rather than via monkey patching.  
 

@@ -22,7 +22,7 @@ This is a fork of the `testutil` component of Gustavo Niemeyer's [goamz](https:/
 See the `TestUsage` method in the unit test for a usage example
 
 ```go
-var testServer = NewHTTPServer()
+testServer := fakehttp.NewHTTPServer()
 testServer.Start()
 
 testServer.Response(200, nil, "<html>foo</html>")

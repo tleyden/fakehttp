@@ -11,7 +11,7 @@ import (
 func TestUsage(t *testing.T) {
 
 	// startup fake server
-	var testServer = NewHTTPServer()
+	testServer := NewHTTPServer()
 	testServer.Start()
 
 	// tell it to respond with 200 status and this fake response
@@ -25,6 +25,8 @@ func TestUsage(t *testing.T) {
 	if err != nil {
 		panic("unexpected error")
 	}
+	defer responseBody.Close()
+
 	responseBody, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		panic("unexpected error")

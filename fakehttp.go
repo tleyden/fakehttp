@@ -12,7 +12,7 @@ import (
 )
 
 type HTTPServer struct {
-	URL      string
+	URL      *url.URL
 	Timeout  time.Duration
 	started  bool
 	request  chan *http.Request
@@ -26,7 +26,17 @@ type Response struct {
 }
 
 func NewHTTPServer() *HTTPServer {
-	return &HTTPServer{URL: "http://localhost:4444", Timeout: 5 * time.Second}
+	return NewHTTPServerWithPort(4444)
+}
+
+func NewHTTPServerWithPort(port int) *HTTPServer {
+	urlString := fmt.Sprintf("http://localhost:%d", port)
+	fmt.Printf("urlString: %v\n", urlString)
+	url, err := url.Parse(urlString)
+	if err != nil {
+		panic(fmt.Sprintf("Cannot parse url: %v", urlString))
+	}
+	return &HTTPServer{URL: url, Timeout: 25 * time.Second}
 }
 
 type ResponseFunc func(path string) Response
@@ -38,10 +48,7 @@ func (s *HTTPServer) Start() {
 	s.started = true
 	s.request = make(chan *http.Request, 1024)
 	s.response = make(chan ResponseFunc, 1024)
-	u, err := url.Parse(s.URL)
-	if err != nil {
-		panic(err)
-	}
+	u := s.URL
 	l, err := net.Listen("tcp", u.Host)
 	if err != nil {
 		panic(err)
@@ -51,7 +58,9 @@ func (s *HTTPServer) Start() {
 	s.Response(203, nil, "")
 	for {
 		// Wait for it to be up.
-		resp, err := http.Get(s.URL)
+		fmt.Printf("wait for it to be up: %v|\n", s.URL.String())
+		resp, err := http.Get(s.URL.String())
+		fmt.Printf("resp: %v err: %v\n", resp, err)
 		if err == nil && resp.StatusCode == 203 {
 			break
 		}

@@ -12,11 +12,12 @@ import (
 )
 
 type HTTPServer struct {
-	URL      *url.URL
-	Timeout  time.Duration
-	started  bool
-	request  chan *http.Request
-	response chan ResponseFunc
+	URL           *url.URL
+	Timeout       time.Duration
+	started       bool
+	request       chan *http.Request
+	response      chan ResponseFunc
+	SavedRequests []SavedRequest
 }
 
 type Response struct {
@@ -25,18 +26,28 @@ type Response struct {
 	Body    string
 }
 
+type SavedRequest struct {
+	Request *http.Request
+	Data    []byte
+}
+
 func NewHTTPServer() *HTTPServer {
 	return NewHTTPServerWithPort(4444)
 }
 
 func NewHTTPServerWithPort(port int) *HTTPServer {
+	savedRequests := []SavedRequest{}
 	urlString := fmt.Sprintf("http://localhost:%d", port)
 	fmt.Printf("urlString: %v\n", urlString)
 	url, err := url.Parse(urlString)
 	if err != nil {
 		panic(fmt.Sprintf("Cannot parse url: %v", urlString))
 	}
-	return &HTTPServer{URL: url, Timeout: 25 * time.Second}
+	return &HTTPServer{
+		URL:           url,
+		Timeout:       25 * time.Second,
+		SavedRequests: savedRequests,
+	}
 }
 
 type ResponseFunc func(path string) Response
@@ -96,6 +107,8 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		panic(err)
 	}
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+	savedRequest := SavedRequest{Request: req, Data: data}
+	s.SavedRequests = append(s.SavedRequests, savedRequest)
 	s.request <- req
 	var resp Response
 	select {

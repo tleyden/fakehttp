@@ -8,6 +8,8 @@ Fakehttp is trying to accomplish the same goal as the Ruby fakeweb library, but 
 
 Essentially your tests just need to send requests to the fakehttp server, and it will return the response(s) which you've previously instructed it to return.
 
+You can queue up to 1024 responses, which will be returned in FIFO order.  It does not do any pattern matching on the URL request path or verb, it will return the responses regardless of the request path.
+
 # fakehttp vs goamz.testutil
 
 This is a fork of the `testutil` component of Gustavo Niemeyer's [goamz](https://github.com/soundcloud/goamz) library with the following changes:
@@ -26,11 +28,17 @@ testServer := fakehttp.NewHTTPServer()
 testServer.Start()
 
 testServer.Response(200, nil, "<html>foo</html>")
+testServer.Response(200, nil, "<html>bar</html>")
 
 res, err := http.Get("%s/foo.html", testServer.URL)
 responseBody, err := ioutil.ReadAll(res.Body)
-
 assert.True(t, string(responseBody) == "<html>foo</html>")
+
+res, err = http.Get("%s/bar.html", testServer.URL)
+responseBody, err := ioutil.ReadAll(res.Body)
+assert.True(t, string(responseBody) == "<html>bar</html>")
+
+
 ```
 
 

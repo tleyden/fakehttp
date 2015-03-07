@@ -38,7 +38,6 @@ func NewHTTPServer() *HTTPServer {
 func NewHTTPServerWithPort(port int) *HTTPServer {
 	savedRequests := []SavedRequest{}
 	urlString := fmt.Sprintf("http://localhost:%d", port)
-	fmt.Printf("urlString: %v\n", urlString)
 	url, err := url.Parse(urlString)
 	if err != nil {
 		panic(fmt.Sprintf("Cannot parse url: %v", urlString))
@@ -69,9 +68,7 @@ func (s *HTTPServer) Start() {
 	s.Response(203, nil, "")
 	for {
 		// Wait for it to be up.
-		fmt.Printf("wait for it to be up: %v|\n", s.URL.String())
 		resp, err := http.Get(s.URL.String())
-		fmt.Printf("resp: %v err: %v\n", resp, err)
 		if err == nil && resp.StatusCode == 203 {
 			break
 		}

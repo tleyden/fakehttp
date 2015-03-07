@@ -2,10 +2,11 @@ package fakehttp
 
 import (
 	"fmt"
-	"github.com/couchbaselabs/go.assert"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/couchbaselabs/go.assert"
 )
 
 func TestUsage(t *testing.T) {
@@ -21,7 +22,6 @@ func TestUsage(t *testing.T) {
 
 	// send a request to the fake server and read response
 	urlString := fmt.Sprintf("%s/foo.html", testServer.URL.String())
-	fmt.Printf("urlString: %v", urlString)
 	res, err := http.Get(urlString)
 	if err != nil {
 		panic("unexpected error")

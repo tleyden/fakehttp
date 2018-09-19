@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/couchbaselabs/go.assert"
 )
@@ -12,7 +13,7 @@ import (
 func TestUsage(t *testing.T) {
 
 	// startup fake server
-	testServer := NewHTTPServer()
+	testServer := NewHTTPServerWithPort(4444)
 	testServer.Start()
 
 	// tell it to respond with 200 status and this fake response
@@ -36,4 +37,30 @@ func TestUsage(t *testing.T) {
 	// make sure that the response is our fake response
 	assert.True(t, string(responseBody) == fakeResponse)
 
+}
+
+func TestSavedRequestConcurrency(t *testing.T) {
+	testServer := NewHTTPServerWithPort(4445)
+	testServer.Start()
+	testServer.Response(200, nil, "OK")
+
+	go func() {
+		for i := 0; i < 100; i++ {
+			urlString := fmt.Sprintf("%s/foo.html", testServer.URL.String())
+			if _, err := http.Get(urlString); err != nil {
+				panic("unexpected error")
+			}
+		}
+	}()
+
+	go func() {
+		for i := 0; i < 100; i++ {
+			// safe access to savedRequest slice:
+			_ = testServer.Requests()
+			// Causes race:
+			// _ = testServer.SavedRequests
+		}
+	}()
+
+	time.Sleep(time.Millisecond)
 }

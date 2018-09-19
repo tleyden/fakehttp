@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,7 @@ type HTTPServer struct {
 	request       chan *http.Request
 	response      chan ResponseFunc
 	SavedRequests []SavedRequest
+	sync.RWMutex
 }
 
 type Response struct {
@@ -105,7 +107,9 @@ func (s *HTTPServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	req.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 	savedRequest := SavedRequest{Request: req, Data: data}
+	s.Lock()
 	s.SavedRequests = append(s.SavedRequests, savedRequest)
+	s.Unlock()
 	s.request <- req
 	var resp Response
 	select {
@@ -149,6 +153,13 @@ func (s *HTTPServer) WaitRequests(n int) []*http.Request {
 // timeout value for one to be made.
 func (s *HTTPServer) WaitRequest() *http.Request {
 	return s.WaitRequests(1)[0]
+}
+
+// Requests returns the saved requests.
+func (s *HTTPServer) Requests() []SavedRequest {
+	s.RLock()
+	defer s.RUnlock()
+	return s.SavedRequests
 }
 
 // ResponseFunc prepares the test server to respond the following n
